@@ -4,30 +4,34 @@ const { useState: useStateShowcase, useMemo } = React;
 function ShowcasePage({
   pageKey,
   heroClass,
-  title,
-  description,
+  titleKey,
+  descKey,
   techPills,
   accent,
   onNavigate,
   filters,
+  filtersCz,
   swatchColor,
+  lang,
 }) {
   const [filter, setFilter] = useStateShowcase('All');
   const [openProject, setOpenProject] = useStateShowcase(null);
   const items = window.PROJECTS[pageKey] || [];
   const filtered = useMemo(() => filter === 'All' ? items : items.filter(p => p.tag === filter), [filter, items]);
+  const isCz = lang === 'cz';
+  const allLabel = isCz ? 'Vše' : 'All';
 
   return (
     <div className="page-fade-enter">
       <section className={`page-hero ${heroClass}`}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div className="crumb">
-            <a href="#/" onClick={(e) => { e.preventDefault(); onNavigate('home'); }}>ACOE</a>
+            <a href="#/" onClick={(e) => { e.preventDefault(); onNavigate('home'); }}>{T('showcase_crumb_home', lang)}</a>
             <span className="sep">/</span>
-            <span style={{ color: 'white' }}>{title}</span>
+            <span style={{ color: 'white' }}>{T(titleKey, lang)}</span>
           </div>
-          <h1>{title}.</h1>
-          <p className="desc">{description}</p>
+          <h1>{T(titleKey, lang)}.</h1>
+          <p className="desc">{T(descKey, lang)}</p>
           <div className="tech-row">
             {techPills.map(t => (
               <span className="tech-pill" key={t}>
@@ -42,23 +46,33 @@ function ShowcasePage({
       <section className="showcase-section">
         <div className="container">
           <div className="filters">
-            <span className="filter-label">Filter</span>
-            {filters.map(f => (
-              <button
-                key={f}
-                className={`filter ${filter === f ? 'active' : ''}`}
-                onClick={() => setFilter(f)}
-                style={filter === f ? { background: accent, borderColor: accent } : {}}
-              >{f}</button>
-            ))}
+            <span className="filter-label">{T('showcase_filter_label', lang)}</span>
+            <button
+              className={`filter ${filter === 'All' ? 'active' : ''}`}
+              onClick={() => setFilter('All')}
+              style={filter === 'All' ? { background: accent, borderColor: accent } : {}}
+            >{allLabel}</button>
+            {filters.map((f, i) => {
+              const label = isCz && filtersCz ? filtersCz[i] : f;
+              return (
+                <button
+                  key={f}
+                  className={`filter ${filter === f ? 'active' : ''}`}
+                  onClick={() => setFilter(f)}
+                  style={filter === f ? { background: accent, borderColor: accent } : {}}
+                >{label}</button>
+              );
+            })}
             <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--ink-3)', fontWeight: 600 }}>
-              {filtered.length} {filtered.length === 1 ? 'project' : 'projects'}
+              {filtered.length} {filtered.length === 1 ? T('showcase_count_singular', lang) : T('showcase_count_plural', lang)}
             </span>
           </div>
 
           <div className="showcase-grid">
             {filtered.map(p => {
               const Ico = window.Icon[p.Icon] || window.Icon.Robot;
+              const title = isCz && p.titleCz ? p.titleCz : p.title;
+              const desc  = isCz && p.descCz  ? p.descCz  : p.desc;
               return (
                 <article key={p.id} className="showcase" style={{ '--accent': p.accent }}>
                   <div className="showcase-thumb">
@@ -73,11 +87,11 @@ function ShowcasePage({
                       <span style={{ opacity: 0.4 }}>·</span>
                       <span>{p.status}</span>
                     </div>
-                    <h3>{p.title}</h3>
-                    <p>{p.desc}</p>
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
                     <div className="showcase-foot">
                       <button className="view-btn" onClick={() => setOpenProject(p)}>
-                        View details <Icon.Arrow size={14} />
+                        {T('showcase_view_details', lang)} <Icon.Arrow size={14} />
                       </button>
                       <div className="metrics-row">
                         <span className="m"><Icon.Clock size={12} /> <b>{p.hours}</b>/mo</span>
@@ -94,54 +108,63 @@ function ShowcasePage({
               padding: 60, textAlign: 'center', color: 'var(--ink-3)',
               border: '1px dashed rgba(15,12,40,0.12)', borderRadius: 14
             }}>
-              No projects in this category yet. <a style={{ color: accent, fontWeight: 700 }} href="#/hub" onClick={(e) => { e.preventDefault(); onNavigate('hub'); }}>Submit one →</a>
+              {T('showcase_empty', lang)}{' '}
+              <a style={{ color: accent, fontWeight: 700 }} href="#/hub" onClick={(e) => { e.preventDefault(); onNavigate('hub'); }}>
+                {T('showcase_empty_link', lang)}
+              </a>
             </div>
           )}
         </div>
       </section>
 
-      <Modal project={openProject} onClose={() => setOpenProject(null)} />
+      <Modal project={openProject} onClose={() => setOpenProject(null)} lang={lang} />
     </div>
   );
 }
 
-function Robotisation({ onNavigate }) {
+function Robotisation({ onNavigate, lang }) {
   return <ShowcasePage
     pageKey="robotisation"
     heroClass=""
-    title="Robotisation"
-    description="We automate repetitive manual tasks using UiPath RPA — freeing your team to focus on high-value work."
+    titleKey="robo_title"
+    descKey="robo_desc"
     techPills={['UiPath', 'GitLab', 'Excel', 'SAP']}
     accent="#300091"
     swatchColor="#41b6e6"
-    filters={['All', 'SAP', 'Government', 'Sales', 'Operations', 'Finance']}
+    filters={['SAP', 'Government', 'Sales', 'Operations', 'Finance']}
+    filtersCz={['SAP', 'Státní správa', 'Prodej', 'Provoz', 'Finance']}
     onNavigate={onNavigate}
+    lang={lang}
   />;
 }
-function Digitalisation({ onNavigate }) {
+function Digitalisation({ onNavigate, lang }) {
   return <ShowcasePage
     pageKey="digitalisation"
     heroClass="alt"
-    title="Digitalisation"
-    description="We digitalize paper and Excel processes into structured applications and forms with full automation built in."
+    titleKey="digi_title"
+    descKey="digi_desc"
     techPills={['Power Apps', 'Power Automate', 'Dataverse', 'SharePoint']}
     accent="#41b6e6"
     swatchColor="#ffffff"
-    filters={['All', 'Operations', 'Finance']}
+    filters={['Operations', 'Finance']}
+    filtersCz={['Provoz', 'Finance']}
     onNavigate={onNavigate}
+    lang={lang}
   />;
 }
-function Reporting({ onNavigate }) {
+function Reporting({ onNavigate, lang }) {
   return <ShowcasePage
     pageKey="reporting"
     heroClass="red"
-    title="Reporting"
-    description="We visualize complex data and replace manual Excel reports with interactive, automated dashboards."
+    titleKey="repo_title"
+    descKey="repo_desc"
     techPills={['Power BI', 'Confluence', 'Dataverse', 'Azure']}
     accent="#f12e49"
     swatchColor="#ffffff"
-    filters={['All', 'Operations', 'Finance']}
+    filters={['Operations', 'Finance']}
+    filtersCz={['Provoz', 'Finance']}
     onNavigate={onNavigate}
+    lang={lang}
   />;
 }
 

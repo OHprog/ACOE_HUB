@@ -16,6 +16,7 @@
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
+  <script type="text/babel" src="i18n.jsx"></script>
   <script type="text/babel" src="icons.jsx"></script>
   <script type="text/babel" src="data.jsx"></script>
   <script type="text/babel" src="shell.jsx"></script>
@@ -36,7 +37,27 @@
     }
 
     function App() {
-      const [route, setRoute] = useState(parseHash());
+      const [route, setRoute]   = useState(parseHash());
+      const [lang,  setLangRaw] = useState(() => localStorage.getItem('acoe-lang')  || 'en');
+      const [theme, setThemeRaw] = useState(() => localStorage.getItem('acoe-theme') || 'light');
+
+      // Keep window.__lang in sync so T() works outside React tree
+      useEffect(() => {
+        window.__lang = lang;
+      }, [lang]);
+
+      // Apply data-theme on <html> and persist
+      useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('acoe-theme', theme);
+      }, [theme]);
+
+      const setLang = (l) => {
+        window.__lang = l;
+        localStorage.setItem('acoe-lang', l);
+        setLangRaw(l);
+      };
+      const setTheme = (t) => setThemeRaw(t);
 
       useEffect(() => {
         const onHash = () => {
@@ -56,18 +77,20 @@
         }
       };
 
+      const pageProps = { onNavigate: navigate, lang };
+
       let Page = null;
-      if (route === 'home') Page = <Home onNavigate={navigate} />;
-      else if (route === 'robotisation') Page = <Robotisation onNavigate={navigate} />;
-      else if (route === 'digitalisation') Page = <Digitalisation onNavigate={navigate} />;
-      else if (route === 'reporting') Page = <Reporting onNavigate={navigate} />;
-      else if (route === 'hub') Page = <Hub onNavigate={navigate} />;
+      if (route === 'home')           Page = <Home           {...pageProps} />;
+      else if (route === 'robotisation')   Page = <Robotisation   {...pageProps} />;
+      else if (route === 'digitalisation') Page = <Digitalisation {...pageProps} />;
+      else if (route === 'reporting')      Page = <Reporting      {...pageProps} />;
+      else if (route === 'hub')            Page = <Hub            {...pageProps} />;
 
       return (
         <>
-          <Navbar current={route} onNavigate={navigate} />
+          <Navbar current={route} onNavigate={navigate} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
           <main key={route}>{Page}</main>
-          <Footer onNavigate={navigate} />
+          <Footer onNavigate={navigate} lang={lang} />
         </>
       );
     }
