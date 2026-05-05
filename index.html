@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACOE — Automation Center of Excellence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-IFSpMzoNKtjB9bBHZhLfxmHqtFPVXMiLGBuGEdZU6oSHgjY0RifCa69w1qcnBiD" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gcBJO2aMfcBu3MqeSd8nKCiUJFPFbqBsKCf8YiVoOB0h9MOdp3cqbMJBOD0OOFR" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="shell.jsx"></script>
+  <script type="text/babel" src="page-home.jsx"></script>
+  <script type="text/babel" src="page-showcase.jsx"></script>
+  <script type="text/babel" src="page-hub.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const ROUTES = ['home', 'robotisation', 'digitalisation', 'reporting', 'hub'];
+
+    function parseHash() {
+      const h = (window.location.hash || '#/').replace(/^#\/?/, '').toLowerCase();
+      if (!h) return 'home';
+      const seg = h.split('/')[0];
+      return ROUTES.includes(seg) ? seg : 'home';
+    }
+
+    function App() {
+      const [route, setRoute] = useState(parseHash());
+
+      useEffect(() => {
+        const onHash = () => {
+          setRoute(parseHash());
+          window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+        };
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
+      }, []);
+
+      const navigate = (id) => {
+        const target = id === 'home' ? '#/' : `#/${id}`;
+        if (window.location.hash !== target) {
+          window.location.hash = target;
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      let Page = null;
+      if (route === 'home') Page = <Home onNavigate={navigate} />;
+      else if (route === 'robotisation') Page = <Robotisation onNavigate={navigate} />;
+      else if (route === 'digitalisation') Page = <Digitalisation onNavigate={navigate} />;
+      else if (route === 'reporting') Page = <Reporting onNavigate={navigate} />;
+      else if (route === 'hub') Page = <Hub onNavigate={navigate} />;
+
+      return (
+        <>
+          <Navbar current={route} onNavigate={navigate} />
+          <main key={route}>{Page}</main>
+          <Footer onNavigate={navigate} />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
