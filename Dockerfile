@@ -6,6 +6,7 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy portal static files
 COPY index.html   /usr/share/nginx/html/
 COPY styles.css   /usr/share/nginx/html/
+COPY i18n.jsx     /usr/share/nginx/html/
 COPY icons.jsx    /usr/share/nginx/html/
 COPY data.jsx     /usr/share/nginx/html/
 COPY shell.jsx    /usr/share/nginx/html/
